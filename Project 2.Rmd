@@ -2,5 +2,95 @@
 title: "Project 2"
 author: "Gessica Vasconcelos"
 date: "4/3/2020"
-output: html_document
+output: 
+  rmdformats::readthedown:
+    html_document:
+      number_sections: TRUE
+      self_contained: TRUE
+      lightbox: TRUE
+      gallery: FALSE
+      highlight: tango 
+      thumbnails: true
+      toc_float: TRUE
+      use_bookdown: TRUE
+      code_folding: hide 
+      max-width: 1800px
+    pdf_document:
+      toc: yes
+      toc_depth: '3'
 ---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = F, results = 'hide', message = F, echo=F)
+# knitr::opts_chunk$set(include = F)
+# knitr::opts_chunk$set(echo = TRUE)
+options(scientific=T, digits = 3) 
+```
+
+```{r basicfcn}
+# use this function to conveniently load libraries and work smoothly with knitting
+# can add quietly=T option to the require() function
+# note that using this function requires quotes around the package name, as you would when installing packages.
+loadPkg = function(x) { if (!require(x,character.only=T, quietly =T)) { install.packages(x,dep=T,repos="http://cran.us.r-project.org"); if(!require(x,character.only=T)) stop("Package not found") } }
+# unload/detact package when done using it 
+detach_package = function(pkg, character.only = FALSE) { if(!character.only) { pkg <- deparse(substitute(pkg)) } 
+  search_item <- paste("package", pkg,sep = ":") 
+  while(search_item %in% search()) { detach(search_item, unload = TRUE, character.only = TRUE) } 
+}
+```
+
+```{r loadPkg}
+  loadPkg("corrplot")
+  loadPkg("dplyr")
+  loadPkg("ggplot2")
+  loadPkg("tidyverse")
+  loadPkg("sqldf")
+  loadPkg('tidyr')
+```
+
+``` {r Load Dataset}
+  # read in the CSV file and make it into a data frame
+print(getwd())
+  require(data.table)
+  system.time(df <- fread("Adult_Arrests.csv"))
+  df <- data.frame(df)
+  
+```
+
+```{r Converting to Factors}
+df$RACE <- as.factor(df$RACE)
+df$Ethnicity <- as.factor(df$Ethnicity)
+df$Sex <-as.factor(df$Sex)
+df$CATEGORY <- as.factor(df$CATEGORY)
+df$DESCRIPTION <-as.factor(df$DESCRIPTION)
+```
+
+```{r Basic Information about Data}
+AgeSum <- summary(df$AGE)
+YearSum <- summary(df$YEAR)
+MonthSum <- summary(df$Month)
+Female_Ar <- subset(df, Sex == 3)
+Male_Ar <- subset(df, Sex ==2)
+Unk_Ar <- subset(df, Sex ==1)
+
+```  
+
+This data set contains information on `r nrow(df)` felony arrests from the District of Columbia between the years 2013-2017. A felony arrest involves the police taking into custody a person that is suspected of having committed a crime. Crimes that are less severe often result in misdemeanor charges, while more serious acts can result in a felony charge. In this data set, both type of charges are included. The crimes recorded here include boating violations, disorderly conduct, arson, homicide and many more. These crimes have resulted in the arrest of `r nrow(Female_Ar)` females, `r nrow(Male_Ar)` were males and `r nrow(Unk_Ar)` of unknown gender orientation. The mean age of those arrested is 34.8 years old. 
+
+```{r Do people commit crime in their neighborhood?}
+Y2013 <- subset(df, YEAR == 2013)
+Y2014 <- subset(df, YEAR == 2014)
+Y2015 <- subset(df, YEAR == 2015)
+Y2016 <- subset(df, YEAR == 2016)
+Y2017 <- subset(df, YEAR == 2017)
+Liv_OutState <- subset(df, DEFENDANT_PSA == 0) # Arrests of People from out-of-state 
+Liv_DC <- subset(df, DEFENDANT_PSA > 100) # Arrests of DC Residents 
+
+
+
+
+
+
+```
+
+
+```
