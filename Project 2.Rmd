@@ -4,3 +4,20 @@ author: "Gessica Vasconcelos"
 date: "4/3/2020"
 output: html_document
 ---
+
+```{r basic, echo= FALSE, include=T}
+loadPkg = function(pkg, character.only = FALSE) { 
+  if (!character.only) { pkg <- as.character(substitute(pkg)) }
+  pkg <- ifelse(!character.only, as.character(substitute(pkg)) , pkg)  
+  if (!require(pkg,character.only=T, quietly =T)) {  install.packages(substitute(pkg),dep=T); if(!require(pkg,character.only=T)) stop("Package not found") } 
+}
+loadPkg(knitr)
+
+# unload/detact package when done using it
+unloadPkg = function(pkg, character.only = FALSE) { 
+  if(!character.only) { pkg <- as.character(substitute(pkg)) } 
+  search_item <- paste("package", pkg,sep = ":") 
+  while(search_item %in% search()) { detach(search_item, unload = TRUE, character.only = TRUE) } 
+}
+```
+
