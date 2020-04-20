@@ -1,6 +1,6 @@
 ---
 title: "Project 2"
-author: "Gessica Vasconcelos"
+author: "Ashley Frankenfield, Gessica Vasconcelos"
 date: "4/3/2020"
 output: 
   rmdformats::readthedown:
@@ -47,6 +47,7 @@ detach_package = function(pkg, character.only = FALSE) { if(!character.only) { p
   loadPkg('tidyr')
 ```
 
+#Criminal Statistics for DC area
 ``` {r Load Dataset}
   # read in the CSV file and make it into a data frame
 print(getwd())
@@ -131,7 +132,7 @@ levels(df1$CATEGORY) <- c("Narcotics", "Release Violations/Fugitive", "Robbery",
 
 
 ggplot(df1, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) + 
-  geom_boxplot(outlier.colour="red", outlier.shape=1,
+  geom_boxplot(outlier.colour="red", outlier.shape=1,show.legend = FALSE,
                 outlier.size=2) + ggtitle("Type of Crime Comitted according to age")
 
 ```
