@@ -53,24 +53,33 @@ print(getwd())
   require(data.table)
   system.time(df <- fread("Adult_Arrests.csv"))
   df <- data.frame(df)
-  
+str(df)
 ```
 
 ```{r Converting to Factors}
-df$RACE <- as.factor(df$RACE)
-df$Ethnicity <- as.factor(df$Ethnicity)
-df$Sex <-as.factor(df$Sex)
+
+#I believe I'm using the same file as you as you (the one you sent me on the email) but I was getting an error so I just changed the names to match the ones in the file.
+
+df$Race <- as.factor(df$Race)
+df$ETHNICITY <- as.factor(df$ETHNICITY)
+df$SEX <-as.factor(df$SEX)
 df$CATEGORY <- as.factor(df$CATEGORY)
 df$DESCRIPTION <-as.factor(df$DESCRIPTION)
+str(df)
+```
+
+
+```{r Counting missing values and removing not relevant variables}
+sapply(df, function(x) sum(is.na(x)))
 ```
 
 ```{r Basic Information about Data}
 AgeSum <- summary(df$AGE)
 YearSum <- summary(df$YEAR)
 MonthSum <- summary(df$Month)
-Female_Ar <- subset(df, Sex == 3)
-Male_Ar <- subset(df, Sex ==2)
-Unk_Ar <- subset(df, Sex ==1)
+Female_Ar <- subset(df, SEX == 3)
+Male_Ar <- subset(df, SEX ==2)
+Unk_Ar <- subset(df, SEX ==1)
 
 ```  
 
@@ -84,13 +93,49 @@ Y2016 <- subset(df, YEAR == 2016)
 Y2017 <- subset(df, YEAR == 2017)
 Liv_OutState <- subset(df, DEFENDANT_PSA == 0) # Arrests of People from out-of-state 
 Liv_DC <- subset(df, DEFENDANT_PSA > 100) # Arrests of DC Residents 
+```
+
+
+```{r Is there any correlation between age and type of crime comitted?}
+
+sex_category <- data.frame(df[c("SEX", "CATEGORY")])
+sexcat_Logit <- glm(SEX ~ CATEGORY, data = sex_category, family = "binomial")
+summary(sexcat_Logit)
+```
+
+By lookinG at the results from the Logit analysis, we can see that only 5 out of 28 categories are statistically significant. These categories are liquor Law Violations, damage to Property, burglary, offenses against family & children, and arson. As for thee statistically significant variables, category 29 has the lowest p-value suggesting a strong association of the sex of the offender with the probability of comitting arson. The negative coefficient for this predictor suggests that all other variables being equal, the gender is less likely to male passenger is less likely to have survived.
 
 
 
+```{r}
+hist(df$AGE, # histogram
+ col="yellow", # column color
+ border="black",
+ breaks = 25,
+ prob = TRUE, # show densities instead of frequencies
+ xlim = c(10,80),
+ xlab = "Age",
+ main = "Age at which crimes are comitted")
+lines(density(df$AGE), # density plot
+ lwd = 2, # thickness of line
+ col = "blue")
+```
+The histogram and density lines indicates that the age at which the crimes are comitted in DC seems to follow a bimodal distribution. Most of the crimes are comitted by people with 18 years old. There is a steep decrease on crimes comitted by people with aged between 25 and 42 years old. However, this trend is not sustained and the number crimes increaseases comitted by people with ~ 50 years old increases again. 
 
 
+```{r Can age be used as a predictor for the type of crime comited}
+
+df1 <- df
+levels(df1$CATEGORY) <- c("Narcotics", "Release Violations/Fugitive", "Robbery", 
+"Prostitution", "Traffic Violations", "Theft", "Driving While Intoxicated", "Property Crimes", "Disorderly Conduct", "Simple Assault", "Other Crimes","Liquor Law Violations", "Damage to Property", "Aggravated Assault", "Assault on a Police Officer", "Assault with a Dangerous Weapon", "Burglary", "Offenses Against Family & Children", "Vending Violations", "Sex Abuse", "Kidnapping", "Sex Offenses", "Fraud and Financial Crimes", "Weapon Violations", "Theft from Auto", "Homicide", "Motor Vehicle Theft","Gambling","Arson")
+
+
+ggplot(df1, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) + 
+  geom_boxplot(outlier.colour="red", outlier.shape=1,
+                outlier.size=2) + ggtitle("Type of Crime Comitted according to age")
 
 ```
 
 
-```
+{r Can age be used and a predictor for kidnepping}
+
