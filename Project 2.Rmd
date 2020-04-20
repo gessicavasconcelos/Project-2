@@ -53,24 +53,34 @@ print(getwd())
   require(data.table)
   system.time(df <- fread("Adult_Arrests.csv"))
   df <- data.frame(df)
-  
+str(df)
 ```
 
 ```{r Converting to Factors}
-df$RACE <- as.factor(df$RACE)
-df$Ethnicity <- as.factor(df$Ethnicity)
-df$Sex <-as.factor(df$Sex)
+
+#I believe I'm using the same file as you as you (the one you sent me on the email) but I was getting an error so I just changed the names to match the ones in the file.
+
+df$Race <- as.factor(df$Race)
+df$ETHNICITY <- as.factor(df$ETHNICITY)
+df$SEX <-as.factor(df$SEX)
 df$CATEGORY <- as.factor(df$CATEGORY)
 df$DESCRIPTION <-as.factor(df$DESCRIPTION)
+str(df)
+```
+
+
+```{r Counting missing values and removing not relevant variables}
+sapply(df, function(x) sum(is.na(x)))
+select (df,-c(CCN,ARREST_NUMBER))
 ```
 
 ```{r Basic Information about Data}
 AgeSum <- summary(df$AGE)
 YearSum <- summary(df$YEAR)
 MonthSum <- summary(df$Month)
-Female_Ar <- subset(df, Sex == 3)
-Male_Ar <- subset(df, Sex ==2)
-Unk_Ar <- subset(df, Sex ==1)
+Female_Ar <- subset(df, SEX == 3)
+Male_Ar <- subset(df, SEX ==2)
+Unk_Ar <- subset(df, SEX ==1)
 
 ```  
 
@@ -84,13 +94,27 @@ Y2016 <- subset(df, YEAR == 2016)
 Y2017 <- subset(df, YEAR == 2017)
 Liv_OutState <- subset(df, DEFENDANT_PSA == 0) # Arrests of People from out-of-state 
 Liv_DC <- subset(df, DEFENDANT_PSA > 100) # Arrests of DC Residents 
+```
 
 
+```{r Is there any correlation between age and type of crime comitted?}
+
+sex_category <- data.frame(df[c("SEX", "CATEGORY")])
+sexcat_Logit <- glm(SEX ~ CATEGORY, data = sex_category, family = "binomial")
+summary(sexcat_Logit)
+anova(model, test="Chisq")
+```
+
+By lookinG at the results from the Logit analysis, we can see that only 5 out of 28 categories are statistically significant. These categories are liquor Law Violations, damage to Property, burglary, offenses against family & children, and arson. As for thee statistically significant variables, category 29 has the lowest p-value suggesting a strong association of the sex of the offender with the probability of comitting arson. The negative coefficient for this predictor suggests that all other variables being equal, the gender is less likely to male passenger is less likely to have survived.
 
 
+```{r Does the month aff}
+
+month_cat <- data.frame(df[c("CATEGORY", "AGE")])
+monthcat_Logit <- glm(AGE ~ CATEGORY, data = month_cat, family = "binomial")
+summary(monthcat_Logit)
+anova(monthcat_Logit, test="Chisq")
 
 
 ```
 
-
-```
