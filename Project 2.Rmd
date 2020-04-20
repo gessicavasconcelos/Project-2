@@ -71,7 +71,6 @@ str(df)
 
 ```{r Counting missing values and removing not relevant variables}
 sapply(df, function(x) sum(is.na(x)))
-select (df,-c(CCN,ARREST_NUMBER))
 ```
 
 ```{r Basic Information about Data}
@@ -126,9 +125,12 @@ The histogram and density lines indicates that the age at which the crimes are c
 
 ```{r Can age be used as a predictor for the type of crime comited}
 
-boxplot(AGE~CATEGORY, df)
+df1 <- df
+levels(df1$CATEGORY) <- c("Narcotics", "Release Violations/Fugitive", "Robbery", 
+"Prostitution", "Traffic Violations", "Theft", "Driving While Intoxicated", "Property Crimes", "Disorderly Conduct", "Simple Assault", "Other Crimes","Liquor Law Violations", "Damage to Property", "Aggravated Assault", "Assault on a Police Officer", "Assault with a Dangerous Weapon", "Burglary", "Offenses Against Family & Children", "Vending Violations", "Sex Abuse", "Kidnapping", "Sex Offenses", "Fraud and Financial Crimes", "Weapon Violations", "Theft from Auto", "Homicide", "Motor Vehicle Theft","Gambling","Arson")
 
-ggplot(df, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) + 
+
+ggplot(df1, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) + 
   geom_boxplot(outlier.colour="red", outlier.shape=1,
                 outlier.size=2) + ggtitle("Type of Crime Comitted according to age")
 
