@@ -1,6 +1,6 @@
 ---
 title: "Project 2"
-author: "Gessica Vasconcelos"
+author: "Ashley Frankenfield, Gessica Vasconcelos"
 date: "4/3/2020"
 output: 
   rmdformats::readthedown:
@@ -47,6 +47,7 @@ detach_package = function(pkg, character.only = FALSE) { if(!character.only) { p
   loadPkg('tidyr')
 ```
 
+#Criminal Statistics for DC area
 ``` {r Load Dataset}
   # read in the CSV file and make it into a data frame
 print(getwd())
@@ -71,7 +72,6 @@ str(df)
 
 ```{r Counting missing values and removing not relevant variables}
 sapply(df, function(x) sum(is.na(x)))
-select (df,-c(CCN,ARREST_NUMBER))
 ```
 
 ```{r Basic Information about Data}
@@ -102,12 +102,12 @@ Liv_DC <- subset(df, DEFENDANT_PSA > 100) # Arrests of DC Residents
 sex_category <- data.frame(df[c("SEX", "CATEGORY")])
 sexcat_Logit <- glm(SEX ~ CATEGORY, data = sex_category, family = "binomial")
 summary(sexcat_Logit)
-anova(model, test="Chisq")
 ```
 
 By lookinG at the results from the Logit analysis, we can see that only 5 out of 28 categories are statistically significant. These categories are liquor Law Violations, damage to Property, burglary, offenses against family & children, and arson. As for thee statistically significant variables, category 29 has the lowest p-value suggesting a strong association of the sex of the offender with the probability of comitting arson. The negative coefficient for this predictor suggests that all other variables being equal, the gender is less likely to male passenger is less likely to have survived.
 
 
+<<<<<<< HEAD
 ```{r Does the month aff}
 #Checking normality of the variable Age
 ggplot(data=df, aes(x=AGE)) + 
@@ -117,12 +117,38 @@ ggplot(data=df, aes(x=AGE)) +
 
 ```
 The histogram indicates that the age 
+=======
+>>>>>>> e2c9d8121c8ea85a93099b11979f280bfe624779
 
-month_cat <- data.frame(df[c("CATEGORY", "AGE")])
-monthcat_Logit <- glm(AGE ~ CATEGORY, data = month_cat, family = "binomial")
-summary(monthcat_Logit)
-anova(monthcat_Logit, test="Chisq")
+```{r}
+hist(df$AGE, # histogram
+ col="yellow", # column color
+ border="black",
+ breaks = 25,
+ prob = TRUE, # show densities instead of frequencies
+ xlim = c(10,80),
+ xlab = "Age",
+ main = "Age at which crimes are comitted")
+lines(density(df$AGE), # density plot
+ lwd = 2, # thickness of line
+ col = "blue")
+```
+The histogram and density lines indicates that the age at which the crimes are comitted in DC seems to follow a bimodal distribution. Most of the crimes are comitted by people with 18 years old. There is a steep decrease on crimes comitted by people with aged between 25 and 42 years old. However, this trend is not sustained and the number crimes increaseases comitted by people with ~ 50 years old increases again. 
 
+
+```{r Can age be used as a predictor for the type of crime comited}
+
+df1 <- df
+levels(df1$CATEGORY) <- c("Narcotics", "Release Violations/Fugitive", "Robbery", 
+"Prostitution", "Traffic Violations", "Theft", "Driving While Intoxicated", "Property Crimes", "Disorderly Conduct", "Simple Assault", "Other Crimes","Liquor Law Violations", "Damage to Property", "Aggravated Assault", "Assault on a Police Officer", "Assault with a Dangerous Weapon", "Burglary", "Offenses Against Family & Children", "Vending Violations", "Sex Abuse", "Kidnapping", "Sex Offenses", "Fraud and Financial Crimes", "Weapon Violations", "Theft from Auto", "Homicide", "Motor Vehicle Theft","Gambling","Arson")
+
+
+ggplot(df1, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) + 
+  geom_boxplot(outlier.colour="red", outlier.shape=1,show.legend = FALSE,
+                outlier.size=2) + ggtitle("Type of Crime Comitted according to age")
 
 ```
+
+
+{r Can age be used and a predictor for kidnepping}
 
