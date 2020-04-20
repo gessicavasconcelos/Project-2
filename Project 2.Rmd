@@ -108,17 +108,17 @@ anova(model, test="Chisq")
 By lookinG at the results from the Logit analysis, we can see that only 5 out of 28 categories are statistically significant. These categories are liquor Law Violations, damage to Property, burglary, offenses against family & children, and arson. As for thee statistically significant variables, category 29 has the lowest p-value suggesting a strong association of the sex of the offender with the probability of comitting arson. The negative coefficient for this predictor suggests that all other variables being equal, the gender is less likely to male passenger is less likely to have survived.
 
 
-```{r Does the month aff}
-#Checking normality of the variable Age
-ggplot(data=df, aes(x=AGE)) + 
-    geom_histogram( binwidth=2, fill="blue", color="#e9ecef") +
-    ggtitle("Distribution of Age") + xlim(15,70)
 
+```{r}
+hist(df$AGE, # histogram
+ col="yellow", # column color
+ border="black",
+ prob = TRUE, # show densities instead of frequencies
+ xlim = c(10,80),
+ xlab = "Age",
+ main = "Age at which crimes are comitted")
+lines(density(df$AGE), # density plot
+ lwd = 2, # thickness of line
+ col = "blue")
 ```
-The histogram indicates that the age 
-
-month_cat <- data.frame(df[c("CATEGORY", "AGE")])
-monthcat_Logit <- glm(AGE ~ CATEGORY, data = month_cat, family = "binomial")
-summary(monthcat_Logit)
-anova(monthcat_Logit, test="Chisq")
-
+The histogram indicates that the age at which the crimes are comitted in DC seems to follow a bimodal distribution. Most of the crimes are comitted by people with ages between 22 and 24 years old. Then there is a deep 
