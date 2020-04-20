@@ -107,19 +107,6 @@ summary(sexcat_Logit)
 By lookinG at the results from the Logit analysis, we can see that only 5 out of 28 categories are statistically significant. These categories are liquor Law Violations, damage to Property, burglary, offenses against family & children, and arson. As for thee statistically significant variables, category 29 has the lowest p-value suggesting a strong association of the sex of the offender with the probability of comitting arson. The negative coefficient for this predictor suggests that all other variables being equal, the gender is less likely to male passenger is less likely to have survived.
 
 
-<<<<<<< HEAD
-```{r Does the month aff}
-#Checking normality of the variable Age
-ggplot(data=df, aes(x=AGE)) + 
-    geom_histogram( binwidth=2, fill="blue", color="#e9ecef") +
-    ggtitle("Distribution of Age")
-
-
-```
-The histogram indicates that the age 
-=======
->>>>>>> e2c9d8121c8ea85a93099b11979f280bfe624779
-
 ```{r}
 hist(df$AGE, # histogram
  col="yellow", # column color
@@ -149,6 +136,10 @@ ggplot(df1, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) +
 
 ```
 
+```{r}
+loadPkg("ggstatsplot")
+boxplot(CATEGORY ~ AGE, data=df, main="Ozone reading across months")  
 
+```
 {r Can age be used and a predictor for kidnepping}
 
