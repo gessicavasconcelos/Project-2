@@ -126,14 +126,17 @@ The histogram and density lines indicates that the age at which the crimes are c
 
 ```{r Can age be used as a predictor for the type of crime comited}
 
-df1 <- df
+df1 <- df[c("AGE", "CATEGORY")]
+
+
 levels(df1$CATEGORY) <- c("Narcotics", "Release Violations/Fugitive", "Robbery", 
 "Prostitution", "Traffic Violations", "Theft", "Driving While Intoxicated", "Property Crimes", "Disorderly Conduct", "Simple Assault", "Other Crimes","Liquor Law Violations", "Damage to Property", "Aggravated Assault", "Assault on a Police Officer", "Assault with a Dangerous Weapon", "Burglary", "Offenses Against Family & Children", "Vending Violations", "Sex Abuse", "Kidnapping", "Sex Offenses", "Fraud and Financial Crimes", "Weapon Violations", "Theft from Auto", "Homicide", "Motor Vehicle Theft","Gambling","Arson")
 
 
 ggplot(df1, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) + 
-  geom_boxplot(outlier.colour="red", outlier.shape=1,show.legend = FALSE,
-                outlier.size=2) + ggtitle("Type of Crime Comitted according to age")
+  geom_boxplot(outlier.colour="black", outlier.shape=1,show.legend = FALSE,
+                outlier.size=1) + ggtitle("Type of Crime Comitted according to age") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
 
