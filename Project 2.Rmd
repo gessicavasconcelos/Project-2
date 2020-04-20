@@ -113,7 +113,7 @@ By lookinG at the results from the Logit analysis, we can see that only 5 out of
 hist(df$AGE, # histogram
  col="yellow", # column color
  border="black",
- breaks = 30,
+ breaks = 25,
  prob = TRUE, # show densities instead of frequencies
  xlim = c(10,80),
  xlab = "Age",
@@ -122,4 +122,8 @@ lines(density(df$AGE), # density plot
  lwd = 2, # thickness of line
  col = "blue")
 ```
-The histogram indicates that the age at which the crimes are comitted in DC seems to follow a bimodal distribution. Most of the crimes are comitted by people with ages between 22 and 24 years old. Then there is a steep decrease on crimes comi
+The histogram and density lines indicates that the age at which the crimes are comitted in DC seems to follow a bimodal distribution. Most of the crimes are comitted by people with 18 years old. There is a steep decrease on crimes comitted by people with aged between 25 and 42 years old. However, this trend is not sustained and the number crimes increaseases comitted by people with ~ 50 years old increases again. 
+
+
+
+
