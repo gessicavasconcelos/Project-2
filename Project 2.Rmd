@@ -102,7 +102,6 @@ Liv_DC <- subset(df, DEFENDANT_PSA > 100) # Arrests of DC Residents
 sex_category <- data.frame(df[c("SEX", "CATEGORY")])
 sexcat_Logit <- glm(SEX ~ CATEGORY, data = sex_category, family = "binomial")
 summary(sexcat_Logit)
-anova(model, test="Chisq")
 ```
 
 By lookinG at the results from the Logit analysis, we can see that only 5 out of 28 categories are statistically significant. These categories are liquor Law Violations, damage to Property, burglary, offenses against family & children, and arson. As for thee statistically significant variables, category 29 has the lowest p-value suggesting a strong association of the sex of the offender with the probability of comitting arson. The negative coefficient for this predictor suggests that all other variables being equal, the gender is less likely to male passenger is less likely to have survived.
@@ -125,5 +124,16 @@ lines(density(df$AGE), # density plot
 The histogram and density lines indicates that the age at which the crimes are comitted in DC seems to follow a bimodal distribution. Most of the crimes are comitted by people with 18 years old. There is a steep decrease on crimes comitted by people with aged between 25 and 42 years old. However, this trend is not sustained and the number crimes increaseases comitted by people with ~ 50 years old increases again. 
 
 
+```{r Can age be used as a predictor for the type of crime comited}
 
+boxplot(AGE~CATEGORY, df)
+
+ggplot(df, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) + 
+  geom_boxplot(outlier.colour="red", outlier.shape=1,
+                outlier.size=2) + ggtitle("Type of Crime Comitted according to age")
+
+```
+
+
+{r Can age be used and a predictor for kidnepping}
 
