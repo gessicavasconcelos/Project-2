@@ -109,6 +109,14 @@ By lookinG at the results from the Logit analysis, we can see that only 5 out of
 
 
 ```{r Does the month aff}
+#Checking normality of the variable Age
+ggplot(data=df, aes(x=AGE)) + 
+    geom_histogram( binwidth=2, fill="blue", color="#e9ecef") +
+    ggtitle("Distribution of Age")
+
+
+```
+The histogram indicates that the age 
 
 month_cat <- data.frame(df[c("CATEGORY", "AGE")])
 monthcat_Logit <- glm(AGE ~ CATEGORY, data = month_cat, family = "binomial")
