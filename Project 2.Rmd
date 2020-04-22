@@ -143,8 +143,8 @@ ggplot(df1, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) +
 #install.packages("mapproj")
 #install.packages("ggmap")
 #install.packages("DeducerSpatial")
-#require(maps)
-#require(ggmap)
+require(maps)
+require(ggmap)
 #register_google(key = "AIzaSyA1A_PfatMAo3MAAL_PcctBHkQKxii0Rto")
 
 violent_crimes <- subset(df, CATEGORY != 2)
@@ -163,36 +163,10 @@ dcmap +geom_point(aes(x = OFFENSE_LONGITUDE, y = OFFENSE_LATITUDE, size = CATEGO
 ```
 
 
-```{r}
-
-gwu_crimes <- subset(df, CATEGORY != 1:2 & CATEGORY != 4:13 & CATEGORY !=15:19  & CATEGORY != 21:25 & CATEGORY != 27:29)
-
-
-# rank violent crimes
-gwu_crimes$CATEGORY <- factor(violent_crimes$CATEGORY, levels = c(3, 14, 20,26))
-dcmap1 <- qmap('gwu', zoom = 14, color = 'color')
-
-dcmap1 +geom_point(aes(x = OFFENSE_LONGITUDE, y = OFFENSE_LATITUDE, size = CATEGORY,colour = CATEGORY), data = violent_crimes )+ theme(legend.box = "vertical",legend.position = "topleft")
-
-```
-
-
 ```{r Is there a relationship between age and the type of crime comitted? }
 
 fit <- lm(AGE ~ CATEGORY, data = df)
 summary(fit)
-```
-
-```{r When do the most violent crimes happen?}
-
-# using subset function
-dim(df)
-newdata <- subset(mydata, age >= 20 | age < 10,
-select=c(ID, Weight))
-
-newdata <- subset(df, CATEGORY = 26, select=c(YEAR, CATEGORY))
-str(newdata)
-hist(newdata)
 ```
 
 
