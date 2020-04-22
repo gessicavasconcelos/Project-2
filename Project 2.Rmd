@@ -161,14 +161,39 @@ The histogram and density lines indicates that the age at which the crimes are c
 
 ```{r Can age be used as a predictor for the type of crime commited}
 
-df1 <- df
+df1 <- df[c("AGE", "CATEGORY")]
+
 levels(df1$CATEGORY) <- c("Narcotics", "Release Violations/Fugitive", "Robbery", 
 "Prostitution", "Traffic Violations", "Theft", "Driving While Intoxicated", "Property Crimes", "Disorderly Conduct", "Simple Assault", "Other Crimes","Liquor Law Violations", "Damage to Property", "Aggravated Assault", "Assault on a Police Officer", "Assault with a Dangerous Weapon", "Burglary", "Offenses Against Family & Children", "Vending Violations", "Sex Abuse", "Kidnapping", "Sex Offenses", "Fraud and Financial Crimes", "Weapon Violations", "Theft from Auto", "Homicide", "Motor Vehicle Theft","Gambling","Arson")
 
 
 ggplot(df1, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) + 
-  geom_boxplot(outlier.colour="red", outlier.shape=1,show.legend = FALSE,
-                outlier.size=2) + ggtitle("Type of Crime Comitted according to age")
+  geom_boxplot(outlier.colour="black", outlier.shape=1,show.legend = FALSE,
+                outlier.size=1) + ggtitle("Type of Crime Comitted according to age") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r Violent crimes comitted at Foggy Botton}
+#install.packages("mapproj")
+#install.packages("ggmap")
+#install.packages("DeducerSpatial")
+require(maps)
+require(ggmap)
+#register_google(key = "AIzaSyA1A_PfatMAo3MAAL_PcctBHkQKxii0Rto")
+
+violent_crimes <- subset(df, CATEGORY != 2)
+
+
+
+# rank violent crimes
+violent_crimes$CATEGORY <- factor(violent_crimes$CATEGORY, levels = c(16,20,26))
+# 3- robbery, 14- aggravated assault, 20- Sex abuse, 26- homicide, 1-Narcotics , 12-Liquor Law Violations, 28-gambling
+
+
+dcmap <- qmap('gwu', zoom = 12, color = 'color')
+
+dcmap +geom_point(aes(x = OFFENSE_LONGITUDE, y = OFFENSE_LATITUDE, size = CATEGORY,colour = CATEGORY), data = violent_crimes )+ theme(legend.box = "vertical",legend.position = "topleft")
 
 ```
 
@@ -177,8 +202,17 @@ loadPkg("ggstatsplot")
 boxplot(CATEGORY ~ AGE, data=df, main="Ozone reading across months")  
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ```
 =======
+=======
+```{r Is there a relationship between age and the type of crime comitted? }
+
+fit <- lm(AGE ~ CATEGORY, data = df)
+summary(fit)
+```
+
+>>>>>>> 7e5648af124c3044fa25372d4d6b35c77cc69f1a
 ```{r Do people commit crime in their neighborhood}
 Liv_OutState <- subset(df, DEFENDANT_PSA == 0) # Arrests of People from out-of-state 
 Liv_DC <- subset(df, DEFENDANT_PSA > 100) # Arrests of DC Residents 
@@ -196,6 +230,7 @@ levels(Violet_Crime$CATEGORY)
 We wanted to examine whether or not people are more likely to commit a felony offense in their own neighborhood. Based on our findings, `r nrow(Home_Crime)` people, or 24%, of those that committed a crime in DC did so in their own neighborhood. We wanted to extend these findings and see what crimes people are more likely to commit closer to home. For our purposes, we have distinguished between violent offenses, white collar crimes and misdemenors. 
 
 Violent Crimes <- Aggravated Assult, Assult on a Police Officer, Assult with a Dangerous Weapon, Sex Offenses, Kidnapping, Sex Abuse, HOmicide, Weapon Violations, Arson
+<<<<<<< HEAD
 
 
 Misdeminor 
@@ -207,3 +242,5 @@ Misdeminor
 >>>>>>> e7f742310633574e4e2a0f6734ac536c509bfb7d
 {r Can age be used and a predictor for kidnepping}
 
+=======
+>>>>>>> 7e5648af124c3044fa25372d4d6b35c77cc69f1a
