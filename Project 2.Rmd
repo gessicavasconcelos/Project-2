@@ -38,6 +38,57 @@ detach_package = function(pkg, character.only = FALSE) { if(!character.only) { p
 }
 ```
 
+```{r outlierKD2}
+outlierKD2 <- function(df, var, rm=FALSE) { 
+    #' Original outlierKD functino by By Klodian Dhana,
+    #' https://www.r-bloggers.com/identify-describe-plot-and-remove-the-outliers-from-the-dataset/
+    #' Modified to have third argument for removing outliers inwtead of interactive prompt, 
+    #' and after removing outlier, original df will not be changed. The function returns the new df, 
+    #' which can be saved as original df name if desired.
+    #' Check outliers, and option to remove them, save as a new dataframe. 
+    #' @param df The dataframe.
+    #' @param var The variable in the dataframe to be checked for outliers
+    #' @param rm Boolean. Whether to remove outliers or not.
+    #' @return The dataframe with outliers replaced by NA if rm==TRUE, or df if nothing changed
+    #' @examples
+    #' outlierKD2(mydf, height, FALSE)
+    #' mydf = outlierKD2(mydf, height, TRUE)
+    #' mydfnew = outlierKD2(mydf, height, TRUE)
+    dt = df # duplicate the dataframe for potential alteration
+    var_name <- eval(substitute(var),eval(dt))
+    na1 <- sum(is.na(var_name))
+    m1 <- mean(var_name, na.rm = T)
+    par(mfrow=c(2, 2), oma=c(0,0,3,0))
+    boxplot(var_name, main="With outliers")
+    hist(var_name, main="With outliers", xlab=NA, ylab=NA)
+    outlier <- boxplot.stats(var_name)$out
+    mo <- mean(outlier)
+    var_name <- ifelse(var_name %in% outlier, NA, var_name)
+    boxplot(var_name, main="Without outliers")
+    hist(var_name, main="Without outliers", xlab=NA, ylab=NA)
+    title("Outlier Check", outer=TRUE)
+    na2 <- sum(is.na(var_name))
+    cat("Outliers identified:", na2 - na1, "\n")
+    cat("Propotion (%) of outliers:", round((na2 - na1) / sum(!is.na(var_name))*100, 1), "\n")
+    cat("Mean of the outliers:", round(mo, 2), "\n")
+    m2 <- mean(var_name, na.rm = T)
+    cat("Mean without removing outliers:", round(m1, 2), "\n")
+    cat("Mean if we remove outliers:", round(m2, 2), "\n")
+    
+    # response <- readline(prompt="Do you want to remove outliers and to replace with NA? [yes/no]: ")
+    # if(response == "y" | response == "yes"){
+    if(rm){
+        dt[as.character(substitute(var))] <- invisible(var_name)
+        #assign(as.character(as.list(match.call())$dt), dt, envir = .GlobalEnv)
+        cat("Outliers successfully removed", "\n")
+        return(invisible(dt))
+    } else {
+        cat("Nothing changed", "\n")
+        return(invisible(df))
+    }
+}
+```
+
 ```{r loadPkg}
   loadPkg("corrplot")
   loadPkg("dplyr")
@@ -53,21 +104,18 @@ print(getwd())
   require(data.table)
   system.time(df <- fread("Adult_Arrests.csv"))
   df <- data.frame(df)
-str(df)
+df <- subset(df, select= -c(2, 7, 8)) #removing CCN and Arrest Number due to them being fictious 
+# str(df)
 ```
 
 ```{r Converting to Factors}
-
-#I believe I'm using the same file as you as you (the one you sent me on the email) but I was getting an error so I just changed the names to match the ones in the file.
-
 df$Race <- as.factor(df$Race)
 df$ETHNICITY <- as.factor(df$ETHNICITY)
 df$SEX <-as.factor(df$SEX)
 df$CATEGORY <- as.factor(df$CATEGORY)
 df$DESCRIPTION <-as.factor(df$DESCRIPTION)
-str(df)
+# str(df)
 ```
-
 
 ```{r Counting missing values and removing not relevant variables}
 sapply(df, function(x) sum(is.na(x)))
@@ -80,21 +128,9 @@ MonthSum <- summary(df$Month)
 Female_Ar <- subset(df, SEX == 3)
 Male_Ar <- subset(df, SEX ==2)
 Unk_Ar <- subset(df, SEX ==1)
-
 ```  
 
 This data set contains information on `r nrow(df)` felony arrests from the District of Columbia between the years 2013-2017. A felony arrest involves the police taking into custody a person that is suspected of having committed a crime. Crimes that are less severe often result in misdemeanor charges, while more serious acts can result in a felony charge. In this data set, both type of charges are included. The crimes recorded here include boating violations, disorderly conduct, arson, homicide and many more. These crimes have resulted in the arrest of `r nrow(Female_Ar)` females, `r nrow(Male_Ar)` were males and `r nrow(Unk_Ar)` of unknown gender orientation. The mean age of those arrested is 34.8 years old. 
-
-```{r Do people commit crime in their neighborhood?}
-Y2013 <- subset(df, YEAR == 2013)
-Y2014 <- subset(df, YEAR == 2014)
-Y2015 <- subset(df, YEAR == 2015)
-Y2016 <- subset(df, YEAR == 2016)
-Y2017 <- subset(df, YEAR == 2017)
-Liv_OutState <- subset(df, DEFENDANT_PSA == 0) # Arrests of People from out-of-state 
-Liv_DC <- subset(df, DEFENDANT_PSA > 100) # Arrests of DC Residents 
-```
-
 
 ```{r Is there any correlation between age and type of crime comitted?}
 
@@ -103,7 +139,7 @@ sexcat_Logit <- glm(SEX ~ CATEGORY, data = sex_category, family = "binomial")
 summary(sexcat_Logit)
 ```
 
-By lookinG at the results from the Logit analysis, we can see that only 5 out of 28 categories are statistically significant. These categories are liquor Law Violations, damage to Property, burglary, offenses against family & children, and arson. As for thee statistically significant variables, category 29 has the lowest p-value suggesting a strong association of the sex of the offender with the probability of comitting arson. The negative coefficient for this predictor suggests that all other variables being equal, the gender is less likely to male passenger is less likely to have survived.
+By looking at the results from the Logit analysis, we can see that only 5 out of 28 categories are statistically significant. These categories are liquor Law Violations, damage to Property, burglary, offenses against family & children, and arson. As for thee statistically significant variables, category 29 has the lowest p-value suggesting a strong association of the sex of the offender with the probability of comitting arson. The negative coefficient for this predictor suggests that all other variables being equal, the gender is less likely to male passenger is less likely to have survived.
 
 
 
@@ -120,10 +156,10 @@ lines(density(df$AGE), # density plot
  lwd = 2, # thickness of line
  col = "blue")
 ```
+
 The histogram and density lines indicates that the age at which the crimes are comitted in DC seems to follow a bimodal distribution. Most of the crimes are comitted by people with 18 years old. There is a steep decrease on crimes comitted by people with aged between 25 and 42 years old. However, this trend is not sustained and the number crimes increaseases comitted by people with ~ 50 years old increases again. 
 
-
-```{r Can age be used as a predictor for the type of crime comited}
+```{r Can age be used as a predictor for the type of crime commited}
 
 df1 <- df
 levels(df1$CATEGORY) <- c("Narcotics", "Release Violations/Fugitive", "Robbery", 
@@ -136,6 +172,31 @@ ggplot(df1, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) +
 
 ```
 
+
+```{r Do people commit crime in their neighborhood}
+Liv_OutState <- subset(df, DEFENDANT_PSA == 0) # Arrests of People from out-of-state 
+Liv_DC <- subset(df, DEFENDANT_PSA > 100) # Arrests of DC Residents 
+Home_Crime <- subset(df, DEFENDANT_PSA == OFFENSE_PSA) #The crime was committed in the area that the defendent lives. 
+
+df2 <- Home_Crime 
+levels(df2$CATEGORY) <- c("Narcotics", "Release Violations/Fugitive", "Robbery", 
+"Prostitution", "Traffic Violations", "Theft", "Driving While Intoxicated", "Property Crimes", "Disorderly Conduct", "Simple Assault", "Other Crimes","Liquor Law Violations", "Damage to Property", "Aggravated Assault", "Assault on a Police Officer", "Assault with a Dangerous Weapon", "Burglary", "Offenses Against Family & Children", "Vending Violations", "Sex Abuse", "Kidnapping", "Sex Offenses", "Fraud and Financial Crimes", "Weapon Violations", "Theft from Auto", "Homicide", "Motor Vehicle Theft","Gambling","Arson")
+
+Violet_Crime <- filter(Home_Crime, CATEGORY == 2|3)
+levels(Violet_Crime$CATEGORY)
+```
+
+
+We wanted to examine whether or not people are more likely to commit a felony offense in their own neighborhood. Based on our findings, `r nrow(Home_Crime)` people, or 24%, of those that committed a crime in DC did so in their own neighborhood. We wanted to extend these findings and see what crimes people are more likely to commit closer to home. For our purposes, we have distinguished between violent offenses, white collar crimes and misdemenors. 
+
+Violent Crimes <- Aggravated Assult, Assult on a Police Officer, Assult with a Dangerous Weapon, Sex Offenses, Kidnapping, Sex Abuse, HOmicide, Weapon Violations, Arson
+
+
+Misdeminor 
+```{r crime type}
+
+
+```
 
 {r Can age be used and a predictor for kidnepping}
 
