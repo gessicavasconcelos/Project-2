@@ -234,22 +234,7 @@ Violet_Crime <- filter(Home_Crime, CATEGORY == 2|3)
 levels(Violet_Crime$CATEGORY)
 ```
 
-To further understand our SMART question, we wanted to examine whether people are more likely to commit a felony offense in their own neighborhood. Based on our findings, `r nrow(Home_Crime)` people, or 24%, of those that committed a crime in DC did so in their own neighborhood, while 76% of crimes were committed by residence of DC in a different neighborhood or by out-of-staters. In order to further understand these findings, we also sought to determine if the crimes committed closer to home were more violent offenses, white collar crimes or misdemeanors. For our purposes, we have defined violent crimes as including Aggravated assault, Assault on a Police Officer, Assault with a Dangerous Weapon, Sex Offenses, Kidnapping, Sex Abuse, Homicde, Weapon violations and Arson.  
-
-
-```{r Feature Selection}
-loadPkg("leaps")
-Features <- subset(df, select= -c(2, 13, 16:19, 22:25)) #removing coordinates of arrest, description of arrest and coordinates of offense. 
-colnames(Features) <- c("ID", "Month", "Day", "Hour", "Age", "Defendant_PSA", "Defendant_District", "Race", "Ethnicity", "Sex", "Category", "Arrest_PSA", "Arrest_District", "Offense_PSA", "Offense_District")
-
-
-Features <- na.omit(Features)
-
-reg.best10 <- regsubsets(Category~. , data = Features, nvmax = 10, nbest = 2, method = "exhaustive")
-plot(reg.best10, scale = "bic", main = "BIC")
-summary(reg.best10)
-
-```
+To further understand our SMART question, we wanted to examine whether people are more likely to commit a felony offense in their own neighborhood. Based on our findings, `r nrow(Home_Crime)` people, or 24%, of those that committed a crime in DC did so in their own neighborhood, while 76% of crimes were committed by residence of DC in a different neighborhood or by out-of-staters. In order to further understand these findings, we also sought to determine if the crimes committed closer to home were more violent offenses, white collar crimes or misdemeanors. For our purposes, we have defined violent crimes as including Aggravated assault, Assault on a Police Officer, Assault with a Dangerous Weapon, Sex Offenses, Kidnapping, Sex Abuse, Homicide, Weapon violations and Arson.   
 
 ```{r Do people commit crime in their neighborhood}
 Liv_OutState <- subset(df, DEFENDANT_PSA == 0) # Arrests of People from out-of-state 
@@ -284,18 +269,12 @@ OutState_Plot <- ggplot(OutState, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) +
 
 ```
 
-We wanted to examine whether or not people are more likely to commit a felony offense in their own neighborhood. Based on our findings, `r nrow(Home_Crime)` people, or 24%, of those that committed a crime in DC did so in their own neighborhood. We wanted to extend these findings and see what crimes people are more likely to commit closer to home. For our purposes, we have distinguished between violent offenses, white collar crimes and misdemenors. 
-
-```{r Counts}
-nrow(Home_Crime)
-nrow(Liv_OutState)
-nrow(Out_Crime_DCres)
-
-#Number of Violent Crimes committed per category 
-nrow(Violent_Crime)
-nrow(OutState)
-nrow(Outsider_Crime)
+``` {r, results = "show"}
+Violent_Crime_Plot
+Outsider_Crime_Plot
+OutState_Plot
 ```
+Interestingly, we found that 24.9% of the arrests made between 2013-2017 were of people who committed said crime within in their own neighborhood. Of this percentage, 51.3% of these crimes were the result of a violent crime. In comparison, 26.5% of the arrests documented here were made by people who lived outside DC or were out-of-staters, while the remaining portion was committed by DC residents who committed a crime in a different neighborhood. Of the crimes that out-of-staters were convicted of only 23.6% were violent. This could indicate that people are more likely to commit a violent crime within their own neighborhood. Similarly, the age spread for the violent crimes committed by those that live within DC in their own neighborhoods tended to be larger than for those who committed a crime in a different neighborhood. 
 
 ```{r Does age affect Crime Committed}
 ageanova <- aov(AGE ~ CATEGORY, data=df)
@@ -305,16 +284,27 @@ ageanovasum
 ggplot(df1, aes(AGE, fill = CATEGORY)) +  geom_histogram(alpha = 0.5, aes(y = ..density..), position = 'identity')
 ggplot(df1, aes(AGE, fill = CATEGORY)) + geom_density(alpha = 0.2) 
 ```
-      
-```{r does sex affect Crime type, results='show' }
-loadPkg("gplots")
-gendercontable = xtabs( ~ CATEGORY + SEX, data = df)
-chisqsex = chisq.test(gendercontable)
-chisqsex
-gendercontable
+
+
+## Building a Multivariate Model 
+
+Here, we have sought to determine whether police can accurately determine the type of crime a person is likely to commit based on variables present in this dataset, such as age, race, and ethnicity. First, we have sought to pick the features of this model through using the Bayesian information criterion (BIC). In analyzing the BIC plot shown below, we sought to use the model with the fewest predictors and the lowest BIC score. Based on this, the model that we will build here is hour, age, defendant PSA, race, sex, arrest PSA, arrest district, offense PSA and offense district.
+
+```{r Feature Selection}
+loadPkg("leaps")
+Features <- subset(df, select= -c(2, 13, 16:19, 22:25)) #removing coordinates of arrest, description of arrest and coordinates of offense. 
+colnames(Features) <- c("ID", "Month", "Day", "Hour", "Age", "Defendant_PSA", "Defendant_District", "Race", "Ethnicity", "Sex", "Category", "Arrest_PSA", "Arrest_District", "Offense_PSA", "Offense_District")
+
+
+Features <- na.omit(Features)
+
+reg.best10 <- regsubsets(Category~. , data = Features, nvmax = 10, nbest = 2, method = "exhaustive")
+plot(reg.best10, scale = "bic", main = "BIC")
+summary(reg.best10)
+
 ```
 
-## Building a Multinomial Model 
+To develop a multivariate model, we have split the data set into a training and test set. The training data set contained 67% of the values, while the test set contained 33% of the values. Observations were separated randomly, and the data set was scaled to the center.
 
 ```{r Creating training Set }
 loadPkg("class")
@@ -328,10 +318,6 @@ Training <- ScaledFeatures[Feature_Sample==1, 1:15]
 Test <- ScaledFeatures[Feature_Sample==2, 1:15]
 
 
-Feature_Training <- Features[Feature_Sample==1, 11]
-Feature_Test <- Features[Feature_Sample==1, 11]
-
-#prc_test_pred <- knn(train = Training, test = Test,cl = Feature_Training, k=7)
 ```
 
 ```{r Logit, results='show'}
