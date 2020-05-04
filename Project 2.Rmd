@@ -157,6 +157,7 @@ print(getwd())
 df <- subset(df, select= -c(2, 7, 8)) #removing CCN and Arrest Number due to them being fictious 
 summary(df)
 
+```
 
 ```{r Converting to Factors}
 df$Race <- as.factor(df$Race)
@@ -236,16 +237,14 @@ require(ggmap)
 
 violent_crimes <- subset(df, CATEGORY != 2)
 
-
-
 # rank violent crimes
 violent_crimes$CATEGORY <- factor(violent_crimes$CATEGORY, levels = c(16,20,26))
 # 3- robbery, 14- aggravated assault, 20- Sex abuse, 26- homicide, 1-Narcotics , 12-Liquor Law Violations, 28-gambling
 
 
-dcmap <- qmap('gwu', zoom = 12, color = 'color')
+#dcmap <- qmap('gwu', zoom = 12, color = 'color')
 
-dcmap +geom_point(aes(x = OFFENSE_LONGITUDE, y = OFFENSE_LATITUDE, size = CATEGORY,colour = CATEGORY), data = violent_crimes )+ theme(legend.box = "vertical",legend.position = "topleft")
+#dcmap +geom_point(aes(x = OFFENSE_LONGITUDE, y = OFFENSE_LATITUDE, size = CATEGORY,colour = CATEGORY), data = violent_crimes )+ theme(legend.box = "vertical",legend.position = "topleft")
 
 ```
 
@@ -255,7 +254,7 @@ fit <- lm(AGE ~ CATEGORY, data = df)
 summary(fit)
 ```
 
-```{r Do people commit crime in their neighborhood}
+```{r Do people commit crime in their neighborhood1}
 Liv_OutState <- subset(df, DEFENDANT_PSA == 0) # Arrests of People from out-of-state 
 Liv_DC <- subset(df, DEFENDANT_PSA > 100) # Arrests of DC Residents 
 Home_Crime <- subset(df, DEFENDANT_PSA == OFFENSE_PSA) #The crime was committed in the area that the defendent lives. 
@@ -319,7 +318,6 @@ OutState_Plot <- ggplot(OutState, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) +
   geom_boxplot(outlier.colour="red", outlier.shape=1,show.legend = FALSE,
                 outlier.size=2) + ggtitle("Out-of-Staters Who comitted a Violent Crime in DC")  + theme(axis.text.x = element_text(angle = 30, hjust = 1)) 
 
-
 ```
 
 We wanted to examine whether or not people are more likely to commit a felony offense in their own neighborhood. Based on our findings, `r nrow(Home_Crime)` people, or 24%, of those that committed a crime in DC did so in their own neighborhood. We wanted to extend these findings and see what crimes people are more likely to commit closer to home. For our purposes, we have distinguished between violent offenses, white collar crimes and misdemenors. 
@@ -346,39 +344,13 @@ ggplot(df1, aes(AGE, fill = CATEGORY)) + geom_density(alpha = 0.2)
       
 ```{r does sex affect Crime type, results='show' }
 loadPkg("gplots")
-levels(df1$SEX) <- c("Unknown", "Male", "Female")
-gendercontable = xtabs( ~ CATEGORY + SEX, data = df1)
+gendercontable = xtabs( ~ CATEGORY + SEX, data = df)
 chisqsex = chisq.test(gendercontable)
 chisqsex
-xkabledply(gendercontable, "Contingency Table: Gender vs. Arrest ")
+gendercontable
 ```
 
 ## Building a Multinomial Model 
-```{r Logit, results='show'}
-
-logit1 <- glm(Category ~ Hour + Age + Defendant_PSA + Race + Sex + Offense_PSA + Offense_District, data = Features, binomial(link = "logit"))
-
-table <- summary(logit1)
-exp(coef(logit1))
-xkabledply(table)
-
-```
-
-
-
-```{r AUC, results ='show'}
-loadPkg("pROC") 
-Features$prob=predict(logit1, type = c("response")) 
-h <- roc(Category~prob, data=Features)
-auc(h) 
-plot(h)
-```
-
-```{r McFadden}
-loadPkg("pscl") # use pR2( ) function to calculate McFadden statistics for model eval
-logitpr1 = pR2(logit1)
-logitpr1
-```
 
 ```{r Creating training Set }
 loadPkg("class")
@@ -395,6 +367,19 @@ Test <- ScaledFeatures[Feature_Sample==2, 1:15]
 Feature_Training <- Features[Feature_Sample==1, 11]
 Feature_Test <- Features[Feature_Sample==1, 11]
 
-prc_test_pred <- knn(train = Training, test = Test,cl = Feature_Training, k=7)
+#prc_test_pred <- knn(train = Training, test = Test,cl = Feature_Training, k=7)
 ```
+
+```{r Logit, results='show'}
+loadPkg("MASS")
+logit1 <- lda(Category ~ Hour + Age + Defendant_PSA + Race + Sex + Offense_PSA + Offense_District, data = Training)
+
+Prediction <- logit1 %>% predict(Test)
+logit1
+exp(coef(logit1))
+
+```
+
+
+
 
