@@ -276,12 +276,13 @@ OutState_Plot
 ```
 Interestingly, we found that 24.9% of the arrests made between 2013-2017 were of people who committed said crime within in their own neighborhood. Of this percentage, 51.3% of these crimes were the result of a violent crime. In comparison, 26.5% of the arrests documented here were made by people who lived outside DC or were out-of-staters, while the remaining portion was committed by DC residents who committed a crime in a different neighborhood. Of the crimes that out-of-staters were convicted of only 23.6% were violent. This could indicate that people are more likely to commit a violent crime within their own neighborhood. Similarly, the age spread for the violent crimes committed by those that live within DC in their own neighborhoods tended to be larger than for those who committed a crime in a different neighborhood. 
 
+To better understand the relationship of age and the type of crime committed we have created a density plot that is shown below. Based on this density plot crimes such as narcotics, arson, sex offenses, and gambling are more likely to be committed by people that are younger in age. Felonies involving offenses against family and children, liquor laws, and damage to property occur later in life. If this trend is true, younger people should be profiled more by police as having potentially committed a violent crime.
+
 ```{r Does age affect Crime Committed}
 ageanova <- aov(AGE ~ CATEGORY, data=df)
 ageanovasum <- summary(ageanova)
 ageanovasum
 
-ggplot(df1, aes(AGE, fill = CATEGORY)) +  geom_histogram(alpha = 0.5, aes(y = ..density..), position = 'identity')
 ggplot(df1, aes(AGE, fill = CATEGORY)) + geom_density(alpha = 0.2) 
 ```
 
@@ -320,16 +321,20 @@ Test <- ScaledFeatures[Feature_Sample==2, 1:15]
 
 ```
 
+The multivariate model was produced using the `lda()` function from the MASS package. Linear discriminate analysis (LDA) seeks to find a linear combination of features that can be used to characterize two or more classes of an event. Essentially this model is attempting to recognize a pattern between the physical variables to predict the crime committed. The coefficients of linear discriminants of this model are displayed below. Each LD can be multiplied by the predictor variable to determine the score for that respondent, which can then be used to compute the posterior probability of class membership. 
+
 ```{r Logit, results='show'}
 loadPkg("MASS")
 logit1 <- lda(Category ~ Hour + Age + Defendant_PSA + Race + Sex + Offense_PSA + Offense_District, data = Training)
 
 Prediction <- logit1 %>% predict(Test)
-logit1
 exp(coef(logit1))
 
 ```
 
+## Conclusion 
 
 
+Linear discriminate analysis assumes that the density of the data is gaussian and that all classes have covariance. This model has been shown to be well suited for multi-class analysis and similar to PCA it can be used as a dimensionality reduction technique. Despite this, when the amount of data for each arrest type is imbalanced in the training set, the model may be unable to accurately classify the observations in the test set. This is an accuracy problem that we will experience when using our model, because there are far less violent crimes in comparison to misdemeanors such as narcotics.  Also, the LDA model requires a defined dimension. Higher-order interactions that may exist between the arrest types may therefore not be captured accurately by this model. 
 
+In conclusion, this data set has been found to have a wide variety of arrest types. Based on the findings in this report, we do not feel that the DC police are able to predict the profile of a person who is more likely to commit a crime in DC. There are two reasons why this is impossible. First, based on the BIC this model needs to include features such as the arrest district, and a person’s one police district. Often when police are profiling a potential criminal, they are making their arrests based on physical descriptions such as race and approximate age. As a result, our model would not actually be able to be employed by officers on the street. Similarly, in agreement with the literature “community policing” often involves some type of bias. To demonstrate the ability of a police officer to predict the crime a person may have committed the model would have to include some type of bias variable. Based on this current data set, community policing should not be used. 
