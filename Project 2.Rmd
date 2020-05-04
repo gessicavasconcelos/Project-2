@@ -1,5 +1,5 @@
 ---
-title: "Project 2"
+title: "Analysis of Crime within the District of Columbia"
 author: "Ashley Frankenfield, Gessica Vasconcelos"
 date: "4/3/2020"
 output: 
@@ -38,54 +38,6 @@ detach_package = function(pkg, character.only = FALSE) { if(!character.only) { p
 }
 ```
 
-```{r xkablesummary}
-xkabledply = function(modelsmmrytable, title="Table", digits = 4, pos="left", bso="striped") { 
-  #' Combining base::summary, xtable, and kableExtra, to easily display model summary. 
-  #' wrapper for the base::summary function on model objects
-  #' ELo 202004 GWU DATS
-  #' version 1.2
-  #' @param modelsmmrytable This can be a generic table, a model object such as lm(), or the summary of a model object summary(lm()) 
-  #' @param title Title of table. 
-  #' @param digits Number of digits to display
-  #' @param pos Position of table, c("left","center","right") 
-  #' @param bso bootstrap_options = c("basic", "striped", "bordered", "hover", "condensed", "responsive")
-  #' @return HTML table for display
-  #' @examples
-  #' library("xtable")
-  #' library("kableExtra")
-  #' xkabledply( df, title="Table testing", pos="left", bso="hover" )
-  modelsmmrytable %>%
-    xtable() %>% 
-    kable(caption = title, digits = digits) %>%
-    kable_styling(bootstrap_options = bso, full_width = FALSE, position = pos)
-}
-
-xkablesummary = function(df, title="Table: Statistics summary.", digits = 4, pos="left", bso="striped") { 
-  #' Combining base::summary, xtable, and kableExtra, to easily display numeric variable summary of dataframes. 
-  #' ELo 202004 GWU DATS
-  #' version 1.2
-  #' @param df The dataframe.
-  #' @param title Title of table. 
-  #' @param digits Number of digits to display
-  #' @param pos Position of table, c("left","center","right") 
-  #' @param bso bootstrap_options = c("basic", "striped", "bordered", "hover", "condensed", "responsive")
-  #' @return The HTML summary table for display, or for knitr to process into other formats 
-  #' @examples
-  #' xkablesummary( faraway::ozone )
-  #' xkablesummary( ISLR::Hitters, title="Five number summary", pos="left", bso="hover"  )
-  
-  s = summary(df) %>%
-    apply( 2, function(x) stringr::str_remove_all(x,c("Min.\\s*:\\s*","1st Qu.\\s*:\\s*","Median\\s*:\\s*","Mean\\s*:\\s*","3rd Qu.\\s*:\\s*","Max.\\s*:\\s*")) ) %>% # replace all leading words
-    apply( 2, function(x) stringr::str_trim(x, "right")) # trim trailing spaces left
-  
-  colnames(s) <- stringr::str_trim(colnames(s))
-  
-  if ( dim(s)[1] ==6 ) { rownames(s) <- c('Min','Q1','Median','Mean','Q3','Max') 
-  } else if ( dim(s)[1] ==7 ) { rownames(s) <- c('Min','Q1','Median','Mean','Q3','Max','NA') }
-  
-  xkabledply(s, title=title, digits = digits, pos=pos, bso=bso )
-}
-```
 
 ```{r outlierKD2}
 outlierKD2 <- function(df, var, rm=FALSE) { 
@@ -147,7 +99,7 @@ outlierKD2 <- function(df, var, rm=FALSE) {
   loadPkg('tidyr')
 ```
 
-## Criminal Statistics for DC area
+## Introduction 
 ``` {r Load Dataset}
   # read in the CSV file and make it into a data frame
 print(getwd())
@@ -181,8 +133,21 @@ Male_Ar <- subset(df, SEX ==2)
 Unk_Ar <- subset(df, SEX ==1)
 ```  
 
-This data set contains information on `r nrow(df)` felony arrests from the District of Columbia between the years 2013-2017. A felony arrest involves the police taking into custody a person that is suspected of having committed a crime. Crimes that are less severe often result in misdemeanor charges, while more serious acts can result in a felony charge. In this data set, both type of charges are included. The crimes recorded here include boating violations, disorderly conduct, arson, homicide and many more. These crimes have resulted in the arrest of `r nrow(Female_Ar)` females, `r nrow(Male_Ar)` were males and `r nrow(Unk_Ar)` of unknown gender orientation. The mean age of those arrested is 34.8 years old. 
+This data set contains information on `r nrow(df)` felony arrests from the District of Columbia between the years 2013-2017. The information provided by this data set is readily available on the District of Columbia’s Police Department website. According to the dossier attached to this dataset, a felony arrest is defined as the police taking into custody a person that is suspected of having committed a crime. Although an arrest occurred, information about the conviction for the crime was not included. As a result, the modeling performed in this report has been done with the assumption that there is a 100% conviction rate for all arrests. This is unlikely to occur so some deviation from the model can be expected. 
 
+In this dataset, the crimes recorded here include boating violations, disorderly conduct, arson, homicide and many more. These crimes range in severity from felony convictions to misdemeanors. Of the crimes committed, `r nrow(Female_Ar)` were the result of the arrest of females, `r nrow(Male_Ar)` were males and `r nrow(Unk_Ar)` of unknown gender orientation. Because there are far more males present in this data set, the model built here may be more applicable to the male population. The mean age of those arrested was 34.8 years old. 
+
+For this report, we have sought to answer the question: **“Is it possible to accurately profile who is likely to commit a crime in DC?”** In the last few years, the use of racial profiling by law enforcement has been a controversial topic. Historically, police officers have had a large presence within primarily African American and Latino communities under the assumption that these areas are plagued with crime. As a result of this, there have many incidences of unlawful arrests and police brutality. 
+
+### Structure of the Data Set 
+
+Within this dataset there was originally 28 variables. ObjectID was removed from this dataset because it corresponded only to the row number. Similarly, CCN and Arrest_Number were removed because these values corresponded to specifics about the arrest that were encrypted due to privacy concerns. After scrubbing the data, the variables left are shown below.
+
+```{r structure, results ="show"}
+str(df)
+```
+
+## Correlation of Age and Type of Crime 
 ```{r Is there any correlation between age and type of crime comitted?}
 
 sex_category <- data.frame(df[c("SEX", "CATEGORY")])
@@ -191,7 +156,6 @@ summary(sexcat_Logit)
 ```
 
 By looking at the results from the Logit analysis, we can see that only 5 out of 28 categories are statistically significant. These categories are liquor Law Violations, damage to Property, burglary, offenses against family & children, and arson. As for thee statistically significant variables, category 29 has the lowest p-value suggesting a strong association of the sex of the offender with the probability of comitting arson. The negative coefficient for this predictor suggests that all other variables being equal, the gender is less likely to male passenger is less likely to have survived.
-
 
 
 ```{r}
@@ -225,6 +189,7 @@ ggplot(df1, aes(x=CATEGORY, y=AGE, fill= CATEGORY)) +
 
 ```
 
+## Violent Crime Commited in Foggy Bottom 
 ```{r Violent crimes comitted at Foggy Botton}
 loadPkg("mapproj")
 loadPkg("ggmap")
@@ -254,6 +219,8 @@ fit <- lm(AGE ~ CATEGORY, data = df)
 summary(fit)
 ```
 
+## Do people commit crimes in their own neighborhoods? 
+
 ```{r Do people commit crime in their neighborhood1}
 Liv_OutState <- subset(df, DEFENDANT_PSA == 0) # Arrests of People from out-of-state 
 Liv_DC <- subset(df, DEFENDANT_PSA > 100) # Arrests of DC Residents 
@@ -267,10 +234,7 @@ Violet_Crime <- filter(Home_Crime, CATEGORY == 2|3)
 levels(Violet_Crime$CATEGORY)
 ```
 
-
-We wanted to examine whether or not people are more likely to commit a felony offense in their own neighborhood. Based on our findings, `r nrow(Home_Crime)` people, or 24%, of those that committed a crime in DC did so in their own neighborhood. We wanted to extend these findings and see what crimes people are more likely to commit closer to home. For our purposes, we have distinguished between violent offenses, white collar crimes and misdemenors. 
-
-Violent Crimes <- Aggravated Assult, Assult on a Police Officer, Assult with a Dangerous Weapon, Sex Offenses, Kidnapping, Sex Abuse, HOmicide, Weapon Violations, Arson
+To further understand our SMART question, we wanted to examine whether people are more likely to commit a felony offense in their own neighborhood. Based on our findings, `r nrow(Home_Crime)` people, or 24%, of those that committed a crime in DC did so in their own neighborhood, while 76% of crimes were committed by residence of DC in a different neighborhood or by out-of-staters. In order to further understand these findings, we also sought to determine if the crimes committed closer to home were more violent offenses, white collar crimes or misdemeanors. For our purposes, we have defined violent crimes as including Aggravated assault, Assault on a Police Officer, Assault with a Dangerous Weapon, Sex Offenses, Kidnapping, Sex Abuse, Homicde, Weapon violations and Arson.  
 
 
 ```{r Feature Selection}
